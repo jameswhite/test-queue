@@ -108,12 +108,12 @@ module TestQueue
         @failures << worker.failure_output if worker.failure_output
 
         puts "    [%2d] %60s      %4d suites in %.4fs      (pid %d exit %d%s)" % [
-          worker.num,
-          worker.summary,
-          worker.stats.size,
+          worker.num || -1,
+          worker.summary || '',
+          worker.stats.size || -1,
           worker.end_time - worker.start_time,
-          worker.pid,
-          worker.status.exitstatus,
+          worker.pid || -1,
+          worker.status.exitstatus.nil? ? -1 : worker.status.exitstatus,
           worker.host && " on #{worker.host.split('.').first}"
         ]
       end
