@@ -107,13 +107,13 @@ module TestQueue
         summarize_worker(worker)
         @failures << worker.failure_output if worker.failure_output
 
-        puts "    [%2d] %60s      %4d suites in %.4fs      (pid %d exit %d%s)" % [
+        puts "    [%2d] %60s      %4d suites in %.4fs      (pid %d exit %s%s)" % [
           worker.num,
           worker.summary,
           worker.stats.size,
           worker.end_time - worker.start_time,
           worker.pid,
-          worker.status.exitstatus,
+          worker.status.exitstatus.nil? ? 'nil' : worker.status.exitstatus.to_s,
           worker.host && " on #{worker.host.split('.').first}"
         ]
       end
@@ -135,7 +135,14 @@ module TestQueue
 
       summarize
 
-      estatus = @completed.inject(0){ |s, worker| s + worker.status.exitstatus }
+      estatus = @completed.inject(0) do |s, worker|
+        if worker.status.exitstatus.nil?
+          # A worker that did nothing should not contribute to the overall exit status
+          s
+        else
+          s + worker.status.exitstatus
+        end
+      end
       estatus = 255 if estatus > 255
       exit!(estatus)
     end
